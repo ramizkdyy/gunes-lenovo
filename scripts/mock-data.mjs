@@ -9,6 +9,7 @@
  * tanınır, ürünler slug üzerinden güncellenir. Elle eklediğiniz içeriğe
  * dokunmaz.
  */
+import { readFile } from 'node:fs/promises';
 import { categories, products, heroSlides } from './mock-data.js';
 
 const API = process.env.API_URL ?? 'http://localhost:3000';
@@ -56,10 +57,17 @@ async function ensureMedia(name, url, trim = false) {
     return existing.id;
   }
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`görsel indirilemedi (${res.status}): ${url}`);
-  const type = res.headers.get('content-type') ?? 'image/png';
-  let buffer = Buffer.from(await res.arrayBuffer());
+  // Adres http ile başlamıyorsa repodaki yerel dosya
+  let type, buffer;
+  if (/^https?:/.test(url)) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`görsel indirilemedi (${res.status}): ${url}`);
+    type = res.headers.get('content-type') ?? 'image/png';
+    buffer = Buffer.from(await res.arrayBuffer());
+  } else {
+    buffer = await readFile(url);
+    type = url.endsWith('.png') ? 'image/png' : 'image/jpeg';
+  }
   if (trim) buffer = await trimmed(buffer, type);
   const extension = type.includes('jpeg') ? 'jpg' : 'png';
 
@@ -129,8 +137,8 @@ async function main() {
   const existingSlides = await api('/admin/hero-slides');
 
   for (const [index, entry] of heroSlides.entries()) {
-    const imageId = await ensureMedia(`hero-${index + 1}`, entry.imageUrl, entry.trim);
-    const { imageUrl, trim, ...data } = entry;
+    const imageId = await ensureMedia(`hero-${index + 1}`, entry.imageFile ?? entry.imageUrl, entry.trim);
+    const { imageUrl, imageFile, trim, ...data } = entry;
     const current = existingSlides[index];
 
     if (current) {

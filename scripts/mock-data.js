@@ -24,11 +24,8 @@ const IMG = {
   dm: 'https://p3-ofp.static.pub/ShareResource/ww/img/storage/storage-lp-dm-series.jpg',
   dg: 'https://p4-ofp.static.pub/ShareResource/ww/img/storage/storage-lp-dg-series.jpg',
   de: 'https://p4-ofp.static.pub/ShareResource/ww/img/storage/storage-lp-de-series.jpg',
-  // Hero: yüksek çözünürlüklü resmi ürün görselleri (Lenovo doküman sitesi
-  // ve Lenovo Press). Satış sitesindeki görseller 600px'i geçmiyor.
-  heroSr650v4: 'https://pubs.lenovo.com/sr650-v4/sr650_v4.png',
+  // Açık hero paneli: 8U GPU sunucusu, Lenovo doküman sitesinden (1500px).
   heroSr680a: 'https://pubs.lenovo.com/sr680a-v4/SR680a_V4_image.jpg',
-  heroSr675: 'https://lenovopress.lenovo.com/assets/images/LP1611/SR675%20V3%20Talladega%20Front%20View%208DW%20Left.png',
 };
 
 export const categories = [
@@ -216,8 +213,13 @@ export const products = [
      'Düğüm başına 1x PCIe 5.0 x16']),
 ];
 
+/**
+ * Koyu paneller Lenovo'nun kendi atmosfer fotoğrafları. Kaynakları çok küçük
+ * (1920x688 ve 704x300) olduğu için Real-ESRGAN ile 4 kat büyütülüp repoya
+ * konuldu: scripts/assets/hero-*.jpg.
+ */
 export const heroSlides = [
-  { status: 'PUBLISHED', sort: 0, theme: 'dark-product', imageUrl: IMG.heroSr650v4, trim: true,
+  { status: 'PUBLISHED', sort: 0, theme: 'dark', imageFile: 'scripts/assets/hero-1.jpg',
     eyebrow: 'Lenovo ThinkSystem',
     title: 'Lenovo ThinkSystem Sunucular',
     body: 'Stoktan teslim, yerinde kurulum, resmi garanti.',
@@ -229,7 +231,7 @@ export const heroSlides = [
     body: 'Rack, kule, uç nokta ve GPU sunucuları. Hangisinin size uyduğunu birlikte belirleriz.',
     ctaLabel: 'Kategorilere göz atın', ctaHref: '/#urunler' },
 
-  { status: 'PUBLISHED', sort: 2, theme: 'dark-product', imageUrl: IMG.heroSr675, trim: true,
+  { status: 'PUBLISHED', sort: 2, theme: 'dark', imageFile: 'scripts/assets/hero-3.jpg',
     eyebrow: '',
     title: 'Lenovo 360 Platinum iş ortağı',
     body: 'Faturalı, resmi garantili donanım. Kurulumu ve satış sonrası desteği kendi ekibimiz yürütür.',
