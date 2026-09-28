@@ -1,0 +1,10 @@
+.git
+.angular
+.vscode
+node_modules
+dist
+api
+scripts
+*.tsbuildinfo
+.env
+.env.*
