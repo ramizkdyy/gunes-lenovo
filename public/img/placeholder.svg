@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 345" role="img" aria-label="Görsel yok">
+  <rect width="460" height="345" fill="#f1f3f5"/>
+  <g fill="none" stroke="#c3c9d0" stroke-width="2">
+    <rect x="160" y="126" width="140" height="94" rx="6"/>
+    <path d="M160 194l38-34 30 26 26-22 46 40"/>
+  </g>
+  <circle cx="196" cy="152" r="9" fill="#c3c9d0"/>
+  <text x="230" y="252" fill="#98a1ab" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle">
+    Görsel yüklenmedi
+  </text>
+</svg>

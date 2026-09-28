@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Panele giren kullanıcılar. Şifre bcrypt ile saklanır.
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}
+
+/// Yayın durumu. Siteye yalnızca PUBLISHED olanlar çıkar.
+enum Status {
+  DRAFT
+  PUBLISHED
+}
+
+/// Yüklenen görseller. Dosyanın kendisi diskte, kaydı burada.
+model Media {
+  id        String   @id @default(uuid())
+  /// Diskteki dosya adı: <id>.<uzantı>
+  filename  String
+  mimeType  String
+  size      Int
+  width     Int
+  height    Int
+  /// Görme engelliler ve görsel yüklenmediğinde gösterilen metin
+  alt       String   @default("")
+  createdAt DateTime @default(now())
+
+  categories  Category[]
+  products    Product[]
+  heroSlides  HeroSlide[]
+}
+
+model Category {
+  id       Int     @id @default(autoincrement())
+  slug     String  @unique
+  status   Status  @default(DRAFT)
+  /// Listede görünme sırası
+  sort     Int     @default(0)
+  families String  @default("")
+
+  name String
+  desc String @default("")
+
+  imageId String?
+  image   Media?  @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id     Int    @id @default(autoincrement())
+  slug   String
+  status Status @default(DRAFT)
+  sort   Int    @default(0)
+
+  model   String
+  title String @default("")
+  desc  String @default("")
+
+  datasheetUrl String @default("")
+
+  /// Sabit teknik özellikler. Her üründe aynı başlıklar görünsün diye
+  /// serbest liste değil ayrı alanlar; başlıklar frontend'de yazılı.
+  formFactor     String @default("")
+  processor      String @default("")
+  gpu            String @default("")
+  memory         String @default("")
+  driveBays      String @default("")
+  expansionSlots String @default("")
+
+  imageId String?
+  image   Media?  @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Aynı kategoride iki ürün aynı URL adını kullanamaz.
+  @@unique([categoryId, slug])
+}
+
+model HeroSlide {
+  id     Int    @id @default(autoincrement())
+  status Status @default(DRAFT)
+  sort   Int    @default(0)
+  /// "dark" | "light" — panelin zemin rengi
+  theme  String @default("dark")
+
+  eyebrow  String @default("")
+  title    String
+  body     String @default("")
+  ctaLabel String @default("")
+  ctaHref    String @default("")
+
+  imageId String?
+  image   Media?  @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Formdaki "Konu" listesi. Seçenekler panelden yönetilir.
+model MessageTopic {
+  id      Int     @id @default(autoincrement())
+  label String
+  sort    Int     @default(0)
+  /// Pasife alınan konu formda görünmez ama eski mesajlarda adı korunur.
+  active  Boolean @default(true)
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Mesaj durumu — panelde okunmamışlar öne çıkar.
+enum MessageStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+/// Siteden gelen teklif/iletişim talebi.
+model Message {
+  id     Int           @id @default(autoincrement())
+  status MessageStatus @default(NEW)
+
+  name    String
+  company String @default("")
+  phone   String @default("")
+  email   String @default("")
+  body    String
+
+  topicId Int?
+  topic   MessageTopic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  /// Konu silinse/yeniden adlandırılsa da mesajda ne yazdığı kalsın diye kopya.
+  topicLabel String @default("")
+
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productLabel String @default("")
+
+  /// Formun açıldığı sayfa — talebin nereden geldiğini anlamak için.
+  sourcePath String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}

@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: gunes-api-db
+    environment:
+      POSTGRES_USER: gunes
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-gunes}
+      POSTGRES_DB: gunes
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'gunes']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  db-data:
