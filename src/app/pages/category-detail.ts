@@ -63,7 +63,7 @@ import type { Product } from '../api/models';
 
                 <p class="mt-5 text-[14.5px] leading-[1.6] text-[var(--fg-soft)]">{{ p.title }}</p>
 
-                <!-- Sabit özellik satırları: her kartta aynı başlıklar, aynı sıra -->
+                <!-- Özellik satırları: panelde girilen sırayla -->
                 <ul class="mt-5 space-y-2 text-[14px] leading-[1.55]">
                   @for (spec of specs(p); track spec.label) {
                     <li class="flex gap-1.5">

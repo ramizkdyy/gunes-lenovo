@@ -95,6 +95,11 @@ export class AdminController {
     return this.content.createProduct(dto);
   }
 
+  @Post('products/:id/copy')
+  copyProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.content.copyProduct(id);
+  }
+
   @Put('products/:id')
   updateProduct(@Param('id', ParseIntPipe) id: number, @Body() dto: ProductDto) {
     return this.content.updateProduct(id, dto);

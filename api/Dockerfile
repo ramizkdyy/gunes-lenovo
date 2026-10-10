@@ -17,5 +17,6 @@ COPY --from=build /app/prisma ./prisma
 # Görseller buraya yazılır; Railway'de bu yola Volume bağlanır.
 RUN mkdir -p uploads/cache
 EXPOSE 3000
-# Şema değişikliği veri kaybettirecekse db push hata verip durur, sessizce silmez.
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/main.js"]
+# Önce elle yazılmış veri taşımaları (prisma/sql), sonra şema. Şema değişikliği
+# veri kaybettirecekse db push hata verip durur, sessizce silmez.
+CMD ["sh", "-c", "npm run db:sql && npx prisma db push --skip-generate && node dist/main.js"]

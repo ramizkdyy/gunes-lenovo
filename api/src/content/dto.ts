@@ -1,5 +1,7 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsIn,
   IsInt,
@@ -8,6 +10,7 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 
 /** URL'de görünen ad: küçük harf, rakam ve tire. */
@@ -41,6 +44,19 @@ export class CategoryDto extends BaseDto {
 
   @IsOptional() @IsString() desc?: string;
   @IsOptional() @IsString() families?: string;
+
+  /** Yeni ürünlerde gelecek özellik başlıkları. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(50)
+  @IsString({ each: true })
+  specTemplate?: string[];
+}
+
+/** Ürünün bir özellik satırı: "İşlemci" → "2x Intel Xeon 6". */
+export class SpecDto {
+  @IsString() label!: string;
+  @IsString() value!: string;
 }
 
 export class ProductDto extends BaseDto {
@@ -62,12 +78,12 @@ export class ProductDto extends BaseDto {
   @IsOptional() @IsString() desc?: string;
   @IsOptional() @IsString() datasheetUrl?: string;
 
-  @IsOptional() @IsString() formFactor?: string;
-  @IsOptional() @IsString() processor?: string;
-  @IsOptional() @IsString() gpu?: string;
-  @IsOptional() @IsString() memory?: string;
-  @IsOptional() @IsString() driveBays?: string;
-  @IsOptional() @IsString() expansionSlots?: string;
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(50)
+  @ValidateNested({ each: true })
+  @Type(() => SpecDto)
+  specs?: SpecDto[];
 }
 
 export class HeroSlideDto extends BaseDto {

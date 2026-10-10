@@ -21,6 +21,8 @@ export interface Category {
   families: string;
   name: string;
   desc: string;
+  /** Bu kategoride yeni ürün açılınca gelen özellik başlıkları. */
+  specTemplate: string[];
   imageId: string | null;
   image: Media | null;
   products?: Product[];
@@ -37,12 +39,8 @@ export interface Product {
   desc: string;
   datasheetUrl: string;
 
-  formFactor: string;
-  processor: string;
-  gpu: string;
-  memory: string;
-  driveBays: string;
-  expansionSlots: string;
+  /** Sitede bu sırayla görünür; değeri boş satır atlanır. */
+  specs: Spec[];
 
   imageId: string | null;
   image: Media | null;
@@ -64,37 +62,14 @@ export interface HeroSlide {
   image: Media | null;
 }
 
-/**
- * Her üründe görünen sabit özellik satırları — Lenovo'nun kendi ürün
- * listelerindeki düzen. Başlıklar burada yazılı, veritabanında yalnızca
- * değerler durur. Sıra buradaki sıradır.
- *
- * Alan eklenirse `api/prisma/schema.prisma` ve panel formu da
- * güncellenmeli, yoksa girilecek yeri olmaz.
- */
-export const SPEC_FIELDS = [
-  { field: 'formFactor', label: 'Gövde tipi' },
-  { field: 'processor', label: 'İşlemci' },
-  { field: 'gpu', label: 'GPU desteği' },
-  { field: 'memory', label: 'Bellek' },
-  { field: 'driveBays', label: 'Disk yuvaları' },
-  { field: 'expansionSlots', label: 'Genişletme yuvaları' },
-] as const;
-
 export interface Spec {
   label: string;
   value: string;
 }
 
-/**
- * Ürünün dolu olan özelliklerini sabit sırada döndürür.
- * Boş bırakılan satır listede yer almaz.
- */
+/** Ürünün dolu olan özellikleri, paneldeki sırayla. */
 export function specsOf(product: Product): Spec[] {
-  return SPEC_FIELDS.map((spec) => ({
-    label: spec.label,
-    value: (product as unknown as Record<string, string>)[spec.field] ?? '',
-  })).filter((spec) => spec.value.trim().length > 0);
+  return (product.specs ?? []).filter((spec) => spec.value.trim().length > 0);
 }
 
 export type MessageStatus = 'NEW' | 'READ' | 'ARCHIVED';

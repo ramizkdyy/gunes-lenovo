@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ContactButton } from './components/contact-button';
 import { Footer } from './components/footer';
 import { Header } from './components/header';
+import { setupAnchorScroll } from './anchor-scroll';
 
 @Component({
   selector: 'app-root',
@@ -34,4 +35,8 @@ export class App {
     ),
     { initialValue: false }
   );
+
+  constructor() {
+    setupAnchorScroll();
+  }
 }

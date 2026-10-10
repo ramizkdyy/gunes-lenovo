@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import type { CategoryDto, HeroSlideDto, ProductDto, ReorderDto } from './dto';
+import type { CategoryDto, HeroSlideDto, ProductDto, ReorderDto, SpecDto } from './dto';
 
 /** Görsel ilişkisi ve yayın filtresi her yerde aynı olsun diye kısayollar. */
 const PUBLISHED = { status: 'PUBLISHED' as const };
@@ -107,6 +107,32 @@ export class ContentService {
     );
   }
 
+  /**
+   * Ürünün taslak kopyası: özellikler dahil her şey aynı, URL adının sonuna
+   * "-kopya" eklenir. Panelde yalnızca farklar değiştirilip yayınlanır.
+   */
+  async copyProduct(id: number) {
+    const { id: _id, createdAt, updatedAt, image, ...source } = await this.productById(id);
+    const taken = await this.prisma.product.findMany({
+      where: { categoryId: source.categoryId, slug: { startsWith: `${source.slug}-kopya` } },
+      select: { slug: true },
+    });
+    const used = new Set(taken.map((p) => p.slug));
+    let slug = `${source.slug}-kopya`;
+    for (let n = 2; used.has(slug); n++) slug = `${source.slug}-kopya-${n}`;
+
+    return this.prisma.product.create({
+      data: {
+        ...source,
+        specs: source.specs as Prisma.InputJsonValue,
+        slug,
+        model: `${source.model} (kopya)`,
+        status: 'DRAFT',
+      },
+      include: WITH_IMAGE,
+    });
+  }
+
   async deleteProduct(id: number) {
     await this.productById(id);
     await this.prisma.product.delete({ where: { id } });
@@ -173,6 +199,7 @@ export class ContentService {
       families: dto.families ?? '',
       name: dto.name,
       desc: dto.desc ?? '',
+      specTemplate: (dto.specTemplate ?? []).map((label) => label.trim()).filter(Boolean),
       imageId: dto.imageId || null,
     };
   }
@@ -187,12 +214,7 @@ export class ContentService {
       title: dto.title ?? '',
       desc: dto.desc ?? '',
       datasheetUrl: dto.datasheetUrl ?? '',
-      formFactor: dto.formFactor ?? '',
-      processor: dto.processor ?? '',
-      gpu: dto.gpu ?? '',
-      memory: dto.memory ?? '',
-      driveBays: dto.driveBays ?? '',
-      expansionSlots: dto.expansionSlots ?? '',
+      specs: cleanSpecs(dto.specs ?? []),
       imageId: dto.imageId || null,
     };
   }
@@ -222,4 +244,11 @@ export class ContentService {
       throw error;
     }
   }
+}
+
+/** Başlığı boş satır atılır; değeri boş satır kalır (sitede görünmez, panelde durur). */
+function cleanSpecs(specs: SpecDto[]) {
+  return specs
+    .map(({ label, value }) => ({ label: label.trim(), value: value.trim() }))
+    .filter((spec) => spec.label.length > 0);
 }

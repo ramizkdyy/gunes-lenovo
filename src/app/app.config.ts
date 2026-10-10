@@ -13,7 +13,8 @@ export const appConfig: ApplicationConfig = {
       routes,
       // Rota parametreleri (:slug) bileşenlere input olarak bağlanır.
       withComponentInputBinding(),
-      withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' })
+      // Kaydırmayı anchor-scroll.ts yönetir; router yalnızca Scroll olayını yayar.
+      withInMemoryScrolling({ scrollPositionRestoration: 'disabled', anchorScrolling: 'disabled' })
     ),
   ],
 };

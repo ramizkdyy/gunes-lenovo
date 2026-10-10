@@ -9,6 +9,16 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { categories, heroSlides, products } from './seed-data';
 
+/** Örnek içerik sunucu kategorileri için; hepsi aynı başlıklarla başlar. */
+const SERVER_SPECS = [
+  ['formFactor', 'Gövde tipi'],
+  ['processor', 'İşlemci'],
+  ['gpu', 'GPU desteği'],
+  ['memory', 'Bellek'],
+  ['driveBays', 'Disk yuvaları'],
+  ['expansionSlots', 'Genişletme yuvaları'],
+] as const;
+
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
@@ -30,19 +40,24 @@ async function main(): Promise<void> {
     await prisma.category.upsert({
       where: { slug: category.slug },
       update: {},
-      create: category,
+      create: { ...category, specTemplate: SERVER_SPECS.map(([, label]) => label) },
     });
   }
   console.log(`${categories.length} kategori`);
 
-  for (const { categorySlug, ...product } of products) {
+  for (const { categorySlug, ...row } of products) {
+    const product = Object.fromEntries(
+      Object.entries(row).filter(([key]) => !SERVER_SPECS.some(([field]) => field === key))
+    ) as Omit<typeof row, (typeof SERVER_SPECS)[number][0]>;
+    const specs = SERVER_SPECS.map(([field, label]) => ({ label, value: row[field] }));
+
     const category = await prisma.category.findUnique({ where: { slug: categorySlug } });
     if (!category) throw new Error(`Kategori yok: ${categorySlug}`);
 
     await prisma.product.upsert({
       where: { categoryId_slug: { categoryId: category.id, slug: product.slug } },
       update: {},
-      create: { ...product, categoryId: category.id },
+      create: { ...product, specs, categoryId: category.id },
     });
   }
   console.log(`${products.length} ürün`);

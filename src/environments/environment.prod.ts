@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.lenovo-sunucu.com.tr',
+  apiUrl: 'https://gunes-lenovo-production.up.railway.app',
 };

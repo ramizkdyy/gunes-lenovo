@@ -4,12 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { AdminService } from './admin.service';
 import { ImagePicker } from './image-picker';
 import { INPUT_CLASS, STATUS_OPTIONS, errorMessage, slugify } from './shared';
-import type { Category, Status } from '../api/models';
+import { SpecEditor } from './spec-editor';
+import type { Category, Spec, Status } from '../api/models';
 
 /** Kategori ekleme/düzenleme formu. */
 @Component({
   selector: 'app-admin-category-form',
-  imports: [FormsModule, RouterLink, ImagePicker],
+  imports: [FormsModule, RouterLink, ImagePicker, SpecEditor],
   template: `
     <div class="mx-auto w-full max-w-[720px] px-6 py-10">
       <a routerLink="/admin/kategoriler" class="text-[13.5px] text-[var(--fg-soft)] hover:text-[var(--fg)]">
@@ -69,6 +70,19 @@ import type { Category, Status } from '../api/models';
           </div>
         </div>
 
+        <!-- Bu kategoride yeni ürün açılınca gelecek özellik başlıkları -->
+        <section class="rounded-[var(--radius-card)] border border-[var(--line)] bg-white p-6">
+          <h2 class="text-[15px] font-semibold">Teknik özellik başlıkları</h2>
+          <p class="mt-1.5 text-[13.5px] leading-[1.6] text-[var(--fg-soft)]">
+            Bu kategoride yeni ürün açınca bu başlıklar hazır gelir. Ürünün kendi sayfasında satır eklenip
+            çıkarılabilir. Buradaki değişiklik mevcut ürünleri değiştirmez; onlarda "Kategori başlıklarını
+            uygula" ile güncellenir.
+          </p>
+          <div class="mt-5">
+            <app-spec-editor [(rows)]="templateRows" [withValues]="false" />
+          </div>
+        </section>
+
         @if (error()) {
           <p class="rounded-md bg-[var(--color-brand-050)] px-4 py-3 text-[13.5px] text-[var(--color-brand-600)]">
             {{ error() }}
@@ -110,6 +124,8 @@ export class AdminCategoryForm {
     families: '',
   });
   protected readonly imageId = signal<string | null>(null);
+  /** Editör satır bekliyor; şablonda yalnızca başlıklar saklanır. */
+  protected readonly templateRows = signal<Spec[]>([]);
   protected readonly busy = signal(false);
   protected readonly saved = signal(false);
   protected readonly error = signal('');
@@ -128,6 +144,7 @@ export class AdminCategoryForm {
   private async load(id: number): Promise<void> {
     const category = await this.admin.category(id);
     this.form.set(category);
+    this.templateRows.set((category.specTemplate ?? []).map((label) => ({ label, value: '' })));
     this.imageId.set(category.imageId);
   }
 
@@ -144,7 +161,11 @@ export class AdminCategoryForm {
     this.saved.set(false);
     this.busy.set(true);
 
-    const body = { ...this.form(), imageId: this.imageId() };
+    const body = {
+      ...this.form(),
+      specTemplate: this.templateRows().map((row) => row.label),
+      imageId: this.imageId(),
+    };
     // Sunucu bu alanları kabul etmiyor; ilişkili kayıtlar ayrı yönetiliyor.
     delete (body as Record<string, unknown>)['image'];
     delete (body as Record<string, unknown>)['products'];

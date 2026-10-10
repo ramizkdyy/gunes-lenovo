@@ -51,6 +51,10 @@ model Category {
   name String
   desc String @default("")
 
+  /// Bu kategoride yeni ürün açılınca gelen özellik başlıkları: ["Gövde tipi", …].
+  /// Ürün kendi listesini ayrıca değiştirebilir; şablon yalnızca başlangıç.
+  specTemplate Json @default("[]")
+
   imageId String?
   image   Media?  @relation(fields: [imageId], references: [id], onDelete: SetNull)
 
@@ -72,14 +76,9 @@ model Product {
 
   datasheetUrl String @default("")
 
-  /// Sabit teknik özellikler. Her üründe aynı başlıklar görünsün diye
-  /// serbest liste değil ayrı alanlar; başlıklar frontend'de yazılı.
-  formFactor     String @default("")
-  processor      String @default("")
-  gpu            String @default("")
-  memory         String @default("")
-  driveBays      String @default("")
-  expansionSlots String @default("")
+  /// Teknik özellikler, sitede bu sırayla: [{ label, value }, …].
+  /// Değeri boş satır sitede görünmez.
+  specs Json @default("[]")
 
   imageId String?
   image   Media?  @relation(fields: [imageId], references: [id], onDelete: SetNull)

@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AppImage } from '../api/app-image';
 import { AdminService } from './admin.service';
 import { UiConfirm, UiStatus } from './ui';
@@ -60,11 +60,20 @@ import type { Category, Product } from '../api/models';
                   {{ item.model }}
                 </a>
                 <p class="mt-0.5 truncate text-[12.5px] text-[var(--fg-soft)]">
-                  {{ item.category?.name }} · {{ filledSpecs(item) }}/6 özellik dolu
+                  {{ item.category?.name }} · {{ filledSpecs(item) }}/{{ item.specs.length }} özellik dolu
                 </p>
               </div>
 
               <ui-status [status]="item.status" />
+
+              <button
+                type="button"
+                class="px-2 text-[13.5px] text-[var(--fg-soft)] hover:text-[var(--fg)]"
+                title="Taslak kopyasını açar; yalnızca farkları değiştirip kaydedin"
+                (click)="duplicate(item)"
+              >
+                Kopyala
+              </button>
 
               <button
                 type="button"
@@ -84,6 +93,7 @@ import type { Category, Product } from '../api/models';
 })
 export class AdminProducts {
   private readonly admin = inject(AdminService);
+  private readonly router = inject(Router);
 
   protected readonly items = signal<Product[]>([]);
   protected readonly categories = signal<Category[]>([]);
@@ -113,11 +123,12 @@ export class AdminProducts {
 
   /** Kaç teknik özelliğin doldurulduğunu gösterir — eksik ürün göze çarpsın. */
   protected filledSpecs(product: Product): number {
-    const fields = ['formFactor', 'processor', 'gpu', 'memory', 'driveBays', 'expansionSlots'];
-    return fields.filter((field) => {
-      const value = (product as unknown as Record<string, string>)[`${field}Tr`];
-      return value?.trim().length > 0;
-    }).length;
+    return product.specs.filter((spec) => spec.value.trim()).length;
+  }
+
+  protected async duplicate(item: Product): Promise<void> {
+    const copy = await this.admin.copyProduct(item.id);
+    await this.router.navigate(['/admin/urunler', copy.id]);
   }
 
   protected askDelete(item: Product): void {

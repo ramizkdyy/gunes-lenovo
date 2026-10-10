@@ -38,6 +38,8 @@ export class AdminService {
     firstValueFrom(this.http.post<Product>(`${this.base}/products`, body));
   updateProduct = (id: number, body: Partial<Product>) =>
     firstValueFrom(this.http.put<Product>(`${this.base}/products/${id}`, body));
+  copyProduct = (id: number) =>
+    firstValueFrom(this.http.post<Product>(`${this.base}/products/${id}/copy`, {}));
   deleteProduct = (id: number) => firstValueFrom(this.http.delete(`${this.base}/products/${id}`));
   reorderProducts = (items: SortItem[]) =>
     firstValueFrom(this.http.post(`${this.base}/products/reorder`, items));

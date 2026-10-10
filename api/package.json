@@ -6,7 +6,8 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/main.js",
-    "db:push": "prisma db push",
+    "db:sql": "for f in prisma/sql/*.sql; do prisma db execute --schema prisma/schema.prisma --file \"$f\" || exit 1; done",
+    "db:push": "npm run db:sql && prisma db push",
     "db:seed": "node --import tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
