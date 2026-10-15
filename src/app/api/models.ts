@@ -98,3 +98,13 @@ export interface MessageTopicAdmin {
   active: boolean;
   _count?: { messages: number };
 }
+
+/** Panelden düzenlenen site ayarları. */
+export interface SiteSettings {
+  phone: string;
+}
+
+/** "+90 342 325 55 55" → "tel:+903423255555" */
+export function telHref(phone: string): string {
+  return 'tel:' + phone.replace(/[^\d+]/g, '');
+}

@@ -58,6 +58,11 @@ export const adminRoutes: Routes = [
         title: 'Mesaj konuları — Yönetim',
       },
       {
+        path: 'ayarlar',
+        loadComponent: () => import('./settings.page').then((m) => m.AdminSettings),
+        title: 'Site ayarları — Yönetim',
+      },
+      {
         path: 'gorseller',
         loadComponent: () => import('./media.page').then((m) => m.AdminMedia),
         title: 'Görseller — Yönetim',

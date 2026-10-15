@@ -91,6 +91,7 @@ export class AdminLayout {
     { path: '/admin/hero', label: 'Ana sayfa panelleri', exact: false, badge: false },
     { path: '/admin/gorseller', label: 'Görseller', exact: false, badge: false },
     { path: '/admin/mesaj-konulari', label: 'Mesaj konuları', exact: false, badge: false },
+    { path: '/admin/ayarlar', label: 'Site ayarları', exact: false, badge: false },
   ];
 
   constructor() {

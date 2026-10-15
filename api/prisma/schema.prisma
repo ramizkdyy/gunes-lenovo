@@ -164,3 +164,12 @@ model Message {
 
   @@index([status, createdAt])
 }
+
+/// Sitenin genel ayarları. Tek satır (id = 1); panelden düzenlenir.
+model SiteSettings {
+  id    Int    @id @default(1)
+  /// Header, footer ve teklif sayfasında görünen numara. "tel:" linki bundan üretilir.
+  phone String @default("+90 342 325 55 55")
+
+  updatedAt DateTime @updatedAt
+}

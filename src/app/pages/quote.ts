@@ -1,10 +1,13 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { ContentService } from '../api/content.service';
+import { telHref } from '../api/models';
 import { ContactForm } from '../components/contact-form';
 
 /** Teklif sayfası: formun tam boy hali. */
 @Component({
   selector: 'app-quote',
-  imports: [ContactForm],
+  imports: [AsyncPipe, ContactForm],
   template: `
     <section class="mx-auto w-full max-w-[720px] px-4 pt-32 pb-28 sm:px-6">
       <p class="kicker">Teklif</p>
@@ -19,14 +22,18 @@ import { ContactForm } from '../components/contact-form';
         <app-contact-form />
       </div>
 
-      <p class="mt-8 text-[14px] text-[var(--fg-soft)]">
-        Telefonla ulaşmak isterseniz:
-        <a href="tel:+903423255555" class="font-medium text-[var(--fg)] hover:text-[var(--color-brand-500)]">
-          +90 342 325 55 55
-        </a>
-      </p>
+      @if (settings$ | async; as settings) {
+        <p class="mt-8 text-[14px] text-[var(--fg-soft)]">
+          Telefonla ulaşmak isterseniz:
+          <a [href]="telHref(settings.phone)" class="font-medium text-[var(--fg)] hover:text-[var(--color-brand-500)]">
+            {{ settings.phone }}
+          </a>
+        </p>
+      }
     </section>
   `,
 })
 export class Quote {
+  protected readonly settings$ = inject(ContentService).settings();
+  protected readonly telHref = telHref;
 }

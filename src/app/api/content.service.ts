@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, shareReplay } from 'rxjs';
 import { environment } from '../../environments/environment';
-import type { Category, HeroSlide, Product } from './models';
+import type { Category, HeroSlide, Product, SiteSettings } from './models';
 
 /**
  * Sitenin okuduğu içerik. Yalnızca yayındaki kayıtlar döner;
@@ -15,6 +15,7 @@ export class ContentService {
 
   /** Kategori listesi birden çok yerde kullanılıyor, bir kez çekilir. */
   private categories$?: Observable<Category[]>;
+  private settings$?: Observable<SiteSettings>;
 
   categories(): Observable<Category[]> {
     this.categories$ ??= this.http
@@ -30,6 +31,14 @@ export class ContentService {
 
   product(categorySlug: string, slug: string): Observable<Product> {
     return this.http.get<Product>(`${this.base}/categories/${categorySlug}/${slug}`);
+  }
+
+  /** Telefon gibi genel ayarlar; header, footer ve teklif sayfası paylaşır. */
+  settings(): Observable<SiteSettings> {
+    this.settings$ ??= this.http
+      .get<SiteSettings>(`${this.base}/settings`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.settings$;
   }
 
   heroSlides(): Observable<HeroSlide[]> {

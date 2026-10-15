@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import type { Category, HeroSlide, Media, Message, MessageStatus, MessageTopicAdmin, Product } from '../api/models';
+import type { Category, HeroSlide, Media, Message, MessageStatus, MessageTopicAdmin, Product, SiteSettings } from '../api/models';
 
 /** Sıralama kaydederken gönderilen liste. */
 export interface SortItem {
@@ -67,6 +67,11 @@ export class AdminService {
   setMessageStatus = (id: number, status: MessageStatus) =>
     firstValueFrom(this.http.patch<Message>(`${this.base}/messages/${id}`, { status }));
   deleteMessage = (id: number) => firstValueFrom(this.http.delete(`${this.base}/messages/${id}`));
+
+  // ─── Site ayarları ────────────────────────────────────────────
+  settings = () => firstValueFrom(this.http.get<SiteSettings>(`${this.base}/settings`));
+  updateSettings = (body: SiteSettings) =>
+    firstValueFrom(this.http.put<SiteSettings>(`${this.base}/settings`, body));
 
   // ─── Mesaj konuları ───────────────────────────────────────────
   messageTopics = () =>

@@ -5,6 +5,7 @@ import { ContentModule } from './content/content.module';
 import { MediaModule } from './media/media.module';
 import { MessagesModule } from './messages/messages.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ContentModule,
     MediaModule,
     MessagesModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

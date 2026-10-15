@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ContactService } from '../api/contact.service';
 import { ContentService } from '../api/content.service';
+import { telHref } from '../api/models';
 
 /**
  * Site altlığı. Kategori bağlantıları CMS'ten geliyor; kategori
@@ -51,12 +52,14 @@ import { ContentService } from '../api/content.service';
             <h2 class="text-[13px] font-semibold tracking-wide text-white/50 uppercase">
               İletişim
             </h2>
-            <a
-              href="tel:+903423255555"
-              class="mt-4 block text-[16px] font-medium transition-colors hover:text-[var(--color-brand-400)]"
-            >
-              +90 342 325 55 55
-            </a>
+            @if (settings$ | async; as settings) {
+              <a
+                [href]="telHref(settings.phone)"
+                class="mt-4 block text-[16px] font-medium transition-colors hover:text-[var(--color-brand-400)]"
+              >
+                {{ settings.phone }}
+              </a>
+            }
             <p class="mt-3 max-w-[28ch] text-[14px] leading-[1.6] text-white/55">
               Teklif için formu doldurmanız yeterli.
             </p>
@@ -81,6 +84,10 @@ import { ContentService } from '../api/content.service';
 export class Footer {
   protected readonly contact = inject(ContactService);
 
-  protected readonly categories$ = inject(ContentService).categories();
+  private readonly content = inject(ContentService);
+
+  protected readonly categories$ = this.content.categories();
+  protected readonly settings$ = this.content.settings();
+  protected readonly telHref = telHref;
   protected readonly year = new Date().getFullYear();
 }

@@ -1,6 +1,9 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ContactService } from '../api/contact.service';
+import { ContentService } from '../api/content.service';
+import { telHref } from '../api/models';
 
 /**
  * Siyah, sabit header. Marka olarak yalnızca Lenovo ThinkSystem logosu
@@ -8,7 +11,7 @@ import { ContactService } from '../api/contact.service';
  */
 @Component({
   selector: 'app-header',
-  imports: [RouterLink],
+  imports: [AsyncPipe, RouterLink],
   template: `
     <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[var(--color-ink)]">
       <div class="mx-auto flex h-20 max-w-[1200px] items-center gap-10 px-4 sm:px-6">
@@ -36,12 +39,14 @@ import { ContactService } from '../api/contact.service';
 
         <div class="ml-auto flex items-center gap-3">
 
-          <a
-            href="tel:+903423255555"
-            class="hidden text-[14px] font-medium text-white/65 transition-colors hover:text-white lg:inline"
-          >
-            +90 342 325 55 55
-          </a>
+          @if (settings$ | async; as settings) {
+            <a
+              [href]="telHref(settings.phone)"
+              class="hidden text-[14px] font-medium text-white/65 transition-colors hover:text-white lg:inline"
+            >
+              {{ settings.phone }}
+            </a>
+          }
           <button
             type="button"
             class="rounded-md bg-[var(--color-brand-500)] px-5 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-[var(--color-brand-600)]"
@@ -89,6 +94,8 @@ import { ContactService } from '../api/contact.service';
   `,
 })
 export class Header {
+  protected readonly settings$ = inject(ContentService).settings();
+  protected readonly telHref = telHref;
   protected readonly contact = inject(ContactService);
   protected readonly menuOpen = signal(false);
 
