@@ -57,6 +57,8 @@ export class CategoryDto extends BaseDto {
 export class SpecDto {
   @IsString() label!: string;
   @IsString() value!: string;
+  /** Kategori sayfasındaki ürün kartında gösterilir (ürün başına en fazla 5). */
+  @IsOptional() @IsBoolean() featured?: boolean;
 }
 
 export class ProductDto extends BaseDto {

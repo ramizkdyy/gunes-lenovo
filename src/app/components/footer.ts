@@ -74,7 +74,7 @@ import { telHref } from '../api/models';
         </div>
 
         <div class="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-[12.5px] text-white/40 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {{ year }} · Tüm hakları saklıdır.</p>
+          <p>© {{ year }} Güneş Bilgisayar İletişim Sistemleri A.Ş. · Tüm hakları saklıdır.</p>
           <p>Lenovo, ThinkSystem ve ThinkEdge, Lenovo'nun tescilli markalarıdır.</p>
         </div>
       </div>

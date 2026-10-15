@@ -30,7 +30,8 @@ import type { Category, Product } from '../api/models';
       <div class="mt-6 flex flex-wrap items-center gap-3">
         <select
           name="category"
-          [(ngModel)]="categoryFilter"
+          [ngModel]="categoryFilter()"
+          (ngModelChange)="categoryFilter.set($event)"
           class="rounded-md border border-[var(--line)] bg-white px-3 py-2 text-[14px] outline-none focus:border-[var(--fg)]"
         >
           <option value="">Tüm kategoriler</option>
@@ -99,13 +100,13 @@ export class AdminProducts {
   protected readonly categories = signal<Category[]>([]);
   protected readonly loading = signal(true);
   protected readonly deleteMessage = signal('');
-  protected categoryFilter = '';
+  protected readonly categoryFilter = signal('');
 
   private readonly confirm = viewChild.required(UiConfirm);
   private target: Product | null = null;
 
   protected readonly filtered = computed(() => {
-    const filter = this.categoryFilter;
+    const filter = this.categoryFilter();
     return filter ? this.items().filter((p) => p.categoryId === Number(filter)) : this.items();
   });
 

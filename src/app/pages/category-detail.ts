@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { catchError, of, switchMap } from 'rxjs';
 import { AppImage } from '../api/app-image';
 import { ContentService } from '../api/content.service';
-import { specsOf } from '../api/models';
+import { cardSpecsOf } from '../api/models';
 import type { Product } from '../api/models';
 
 /**
@@ -61,14 +61,19 @@ import type { Product } from '../api/models';
                   imgClass="mt-5 h-36 w-full object-contain"
                 />
 
-                <p class="mt-5 text-[14.5px] leading-[1.6] text-[var(--fg-soft)]">{{ p.title }}</p>
+                <!-- Başlık en fazla 2 satır; kartlar aynı boyda kalsın -->
+                <p class="mt-5 line-clamp-2 min-h-[3.2em] text-[14.5px] leading-[1.6] text-[var(--fg-soft)]">{{ p.title }}</p>
 
-                <!-- Özellik satırları: panelde girilen sırayla -->
-                <ul class="mt-5 space-y-2 text-[14px] leading-[1.55]">
+                <!--
+                  Öne çıkan özellikler (en fazla 5). Alan her zaman 5 satır yer
+                  kaplar: 1 özellik de 5 özellik de olsa kart aynı boyda kalır.
+                  Uzun değer tek satırda kesilir; tamamı detay sayfasında.
+                -->
+                <ul class="mt-5 h-[calc(5*1.55em+4*0.5rem)] space-y-2 overflow-hidden text-[14px] leading-[1.55]">
                   @for (spec of specs(p); track spec.label) {
-                    <li class="flex gap-1.5">
+                    <li class="flex gap-1.5" [attr.title]="spec.label + ': ' + spec.value">
                       <span class="mt-[7px] size-1 shrink-0 rounded-full bg-[var(--color-n-400)]"></span>
-                      <span>
+                      <span class="min-w-0 truncate">
                         <span class="font-semibold">{{ spec.label }}:</span>
                         <span class="text-[var(--fg-soft)]"> {{ spec.value }}</span>
                       </span>
@@ -108,5 +113,5 @@ export class CategoryDetail {
   protected readonly category$ = toObservable(this.slug).pipe(
     switchMap((slug) => this.content.category(slug).pipe(catchError(() => of(null))))
   );
-  protected specs = (product: Product) => specsOf(product);
+  protected specs = (product: Product) => cardSpecsOf(product);
 }

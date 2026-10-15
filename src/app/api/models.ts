@@ -65,11 +65,26 @@ export interface HeroSlide {
 export interface Spec {
   label: string;
   value: string;
+  /** Kategori sayfasındaki ürün kartında gösterilir. */
+  featured?: boolean;
 }
+
+/** Ürün kartında en fazla bu kadar özellik öne çıkar (API ile aynı sınır). */
+export const MAX_FEATURED_SPECS = 5;
 
 /** Ürünün dolu olan özellikleri, paneldeki sırayla. */
 export function specsOf(product: Product): Spec[] {
   return (product.specs ?? []).filter((spec) => spec.value.trim().length > 0);
+}
+
+/**
+ * Ürün kartındaki özellikler: öne çıkarılanlar. Hiçbiri seçilmemişse
+ * ilk dolu özellikler gösterilir, kart boş kalmasın.
+ */
+export function cardSpecsOf(product: Product): Spec[] {
+  const filled = specsOf(product);
+  const featured = filled.filter((spec) => spec.featured);
+  return (featured.length ? featured : filled).slice(0, MAX_FEATURED_SPECS);
 }
 
 export type MessageStatus = 'NEW' | 'READ' | 'ARCHIVED';

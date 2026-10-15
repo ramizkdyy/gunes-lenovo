@@ -49,3 +49,7 @@ Thumbs.db
 !.env.example
 *.tsbuildinfo
 /.angular
+
+# Playwright
+/test-results/
+/playwright-report/

@@ -6,7 +6,8 @@ import type { CreateMessageDto, MessageTopicDto } from './dto';
 
 /** Aynı IP'den arka arkaya gelen gönderimler için basit bir set. */
 const RATE_WINDOW_MS = 60_000;
-const RATE_LIMIT = 5;
+// Testler yerelde art arda çok form gönderdiği için ortamdan yükseltilebilir.
+const RATE_LIMIT = Number(process.env['MESSAGE_RATE_LIMIT'] ?? 5);
 
 @Injectable()
 export class MessagesService {

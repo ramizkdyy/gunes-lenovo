@@ -2,12 +2,15 @@ import { Component, ElementRef, input, model, viewChildren } from '@angular/core
 import { DragHandle } from './drag-handle';
 import { DragSort } from './drag-sort';
 import { INPUT_CLASS } from './shared';
-import type { Spec } from '../api/models';
+import { MAX_FEATURED_SPECS, type Spec } from '../api/models';
 
 /**
  * Özellik satırları: başlık + değer, eklenir, silinir, sürüklenerek
  * sıralanır. Kategori şablonunda yalnızca başlık düzenlenir
  * (`withValues` kapalı), değer kutusu görünmez.
+ *
+ * Ürünlerde her satır "Öne çıkar" ile işaretlenebilir; işaretliler
+ * kategori sayfasındaki ürün kartında görünür (en fazla 5).
  *
  * Kutular ngModel yerine [value]/(input) ile bağlı: üst formda `name`
  * istemeden, satır eklenip silindikçe form kaydı tutmadan çalışsın diye.
@@ -16,6 +19,15 @@ import type { Spec } from '../api/models';
   selector: 'app-spec-editor',
   imports: [DragHandle],
   template: `
+    @if (withValues() && rows().length) {
+      <p class="mb-3 text-[13px] text-[var(--fg-soft)]">
+        Ürün kartında gösterilecek özellikleri "Öne çıkar" ile seçin:
+        <span class="font-semibold text-[var(--fg)]">{{ featuredCount() }}/{{ maxFeatured }}</span>
+        @if (!featuredCount()) {
+          · seçilmezse ilk {{ maxFeatured }} dolu özellik görünür
+        }
+      </p>
+    }
     @if (rows().length) {
       <ul class="space-y-2">
         @for (row of rows(); track $index; let i = $index) {
@@ -50,6 +62,21 @@ import type { Spec } from '../api/models';
                 placeholder="Değer"
                 [attr.aria-label]="(row.label || 'Özellik') + ' değeri'"
               />
+              <label
+                class="flex cursor-pointer items-center gap-1.5 px-1 text-[13px] whitespace-nowrap select-none"
+                [class]="!row.featured && limitReached() ? 'cursor-not-allowed opacity-40' : 'text-[var(--fg-soft)]'"
+                [attr.title]="!row.featured && limitReached() ? 'En fazla ' + maxFeatured + ' özellik öne çıkarılabilir' : null"
+              >
+                <input
+                  type="checkbox"
+                  class="size-4 accent-[var(--color-brand-500)]"
+                  [checked]="!!row.featured"
+                  [disabled]="!row.featured && limitReached()"
+                  (change)="toggleFeatured(i, $any($event.target).checked)"
+                  [attr.aria-label]="(row.label || 'Özellik') + ' öne çıkar'"
+                />
+                Öne çıkar
+              </label>
             }
             <button
               type="button"
@@ -91,14 +118,29 @@ export class SpecEditor {
 
   /** Sürüklenen satır soluklaşır, bırakılacak satır vurgulanır. */
   protected rowClass(index: number): string {
-    const columns = this.withValues() ? 'grid-cols-[auto_minmax(0,200px)_1fr_auto]' : 'grid-cols-[auto_1fr_auto]';
+    const columns = this.withValues() ? 'grid-cols-[auto_minmax(0,200px)_1fr_auto_auto]' : 'grid-cols-[auto_1fr_auto]';
     if (this.sorter.dragging() === index) return `${columns} opacity-40`;
     if (this.sorter.over() === index) return `${columns} bg-[var(--color-n-025)]`;
     return columns;
   }
 
-  protected update(index: number, key: keyof Spec, value: string): void {
+  protected readonly maxFeatured = MAX_FEATURED_SPECS;
+
+  protected featuredCount(): number {
+    return this.rows().filter((row) => row.featured).length;
+  }
+
+  protected limitReached(): boolean {
+    return this.featuredCount() >= MAX_FEATURED_SPECS;
+  }
+
+  protected update(index: number, key: 'label' | 'value', value: string): void {
     this.rows.set(this.rows().map((row, i) => (i === index ? { ...row, [key]: value } : row)));
+  }
+
+  protected toggleFeatured(index: number, featured: boolean): void {
+    if (featured && this.limitReached()) return;
+    this.rows.set(this.rows().map((row, i) => (i === index ? { ...row, featured } : row)));
   }
 
   protected add(): void {

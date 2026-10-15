@@ -13,7 +13,8 @@
     "db:stop": "docker compose -f api/docker-compose.yml down",
     "api": "npm --prefix api run dev",
     "api:setup": "npm --prefix api install && npm --prefix api run db:push && npm --prefix api run db:seed",
-    "mock": "node scripts/mock-data.mjs"
+    "mock": "node scripts/mock-data.mjs",
+    "e2e": "playwright test -c e2e"
   },
   "private": true,
   "packageManager": "npm@11.9.0",
@@ -42,6 +43,7 @@
     "@angular/build": "^21.2.24",
     "@angular/cli": "^21.2.24",
     "@angular/compiler-cli": "^21.2.0",
+    "@playwright/test": "^1.64.1",
     "@spartan-ng/cli": "^1.5.0",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",

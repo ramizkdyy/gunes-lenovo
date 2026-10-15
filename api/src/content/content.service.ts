@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CategoryDto, HeroSlideDto, ProductDto, ReorderDto, SpecDto } from './dto';
@@ -246,9 +246,16 @@ export class ContentService {
   }
 }
 
+/** Ürün kartında en fazla bu kadar özellik öne çıkar. */
+export const MAX_FEATURED_SPECS = 5;
+
 /** Başlığı boş satır atılır; değeri boş satır kalır (sitede görünmez, panelde durur). */
 function cleanSpecs(specs: SpecDto[]) {
-  return specs
-    .map(({ label, value }) => ({ label: label.trim(), value: value.trim() }))
+  const cleaned = specs
+    .map(({ label, value, featured }) => ({ label: label.trim(), value: value.trim(), featured: !!featured }))
     .filter((spec) => spec.label.length > 0);
+  if (cleaned.filter((spec) => spec.featured).length > MAX_FEATURED_SPECS) {
+    throw new BadRequestException(`En fazla ${MAX_FEATURED_SPECS} özellik öne çıkarılabilir`);
+  }
+  return cleaned;
 }

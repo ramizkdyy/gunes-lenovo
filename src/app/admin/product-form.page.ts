@@ -241,11 +241,11 @@ export class AdminProductForm {
    */
   protected applyTemplate(): void {
     const current = this.specs();
-    const byLabel = new Map(current.map((spec) => [spec.label.trim().toLocaleLowerCase('tr'), spec.value]));
-    const fromTemplate = this.template().map((label) => ({
-      label,
-      value: byLabel.get(label.toLocaleLowerCase('tr')) ?? '',
-    }));
+    const byLabel = new Map(current.map((spec) => [spec.label.trim().toLocaleLowerCase('tr'), spec]));
+    const fromTemplate = this.template().map((label) => {
+      const existing = byLabel.get(label.toLocaleLowerCase('tr'));
+      return { label, value: existing?.value ?? '', featured: !!existing?.featured };
+    });
     const templateKeys = new Set(this.template().map((label) => label.toLocaleLowerCase('tr')));
     const extra = current.filter(
       (spec) => spec.value.trim() && !templateKeys.has(spec.label.trim().toLocaleLowerCase('tr'))
