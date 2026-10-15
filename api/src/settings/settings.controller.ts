@@ -10,7 +10,7 @@ export class SettingsPublicController {
 
   @Get('settings')
   get() {
-    return this.settings.get();
+    return this.settings.publicSettings();
   }
 }
 
@@ -22,7 +22,7 @@ export class SettingsAdminController {
 
   @Get('settings')
   get() {
-    return this.settings.get();
+    return this.settings.adminSettings();
   }
 
   @Put('settings')

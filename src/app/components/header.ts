@@ -39,12 +39,12 @@ import { telHref } from '../api/models';
 
         <div class="ml-auto flex items-center gap-3">
 
-          @if (settings$ | async; as settings) {
+          @if ((settings$ | async)?.phone; as phone) {
             <a
-              [href]="telHref(settings.phone)"
+              [href]="telHref(phone)"
               class="hidden text-[14px] font-medium text-white/65 transition-colors hover:text-white lg:inline"
             >
-              {{ settings.phone }}
+              {{ phone }}
             </a>
           }
           <button

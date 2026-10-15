@@ -22,11 +22,11 @@ import { ContactForm } from '../components/contact-form';
         <app-contact-form />
       </div>
 
-      @if (settings$ | async; as settings) {
+      @if ((settings$ | async)?.phone; as phone) {
         <p class="mt-8 text-[14px] text-[var(--fg-soft)]">
           Telefonla ulaşmak isterseniz:
-          <a [href]="telHref(settings.phone)" class="font-medium text-[var(--fg)] hover:text-[var(--color-brand-500)]">
-            {{ settings.phone }}
+          <a [href]="telHref(phone)" class="font-medium text-[var(--fg)] hover:text-[var(--color-brand-500)]">
+            {{ phone }}
           </a>
         </p>
       }

@@ -52,12 +52,12 @@ import { telHref } from '../api/models';
             <h2 class="text-[13px] font-semibold tracking-wide text-white/50 uppercase">
               İletişim
             </h2>
-            @if (settings$ | async; as settings) {
+            @if ((settings$ | async)?.phone; as phone) {
               <a
-                [href]="telHref(settings.phone)"
+                [href]="telHref(phone)"
                 class="mt-4 block text-[16px] font-medium transition-colors hover:text-[var(--color-brand-400)]"
               >
-                {{ settings.phone }}
+                {{ phone }}
               </a>
             }
             <p class="mt-3 max-w-[28ch] text-[14px] leading-[1.6] text-white/55">

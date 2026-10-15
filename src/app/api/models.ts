@@ -99,9 +99,14 @@ export interface MessageTopicAdmin {
   _count?: { messages: number };
 }
 
-/** Panelden düzenlenen site ayarları. */
+/** Panelden düzenlenen site ayarları. Boş telefon sitede gösterilmez. */
 export interface SiteSettings {
   phone: string;
+}
+
+/** Panelin gördüğü ayarlar — bildirim adresi siteye açılmaz. */
+export interface SiteSettingsAdmin extends SiteSettings {
+  notifyEmail: string;
 }
 
 /** "+90 342 325 55 55" → "tel:+903423255555" */

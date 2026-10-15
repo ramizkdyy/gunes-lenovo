@@ -168,8 +168,10 @@ model Message {
 /// Sitenin genel ayarları. Tek satır (id = 1); panelden düzenlenir.
 model SiteSettings {
   id    Int    @id @default(1)
-  /// Header, footer ve teklif sayfasında görünen numara. "tel:" linki bundan üretilir.
+  /// Header, footer ve teklif sayfasında görünen numara. Boşsa sitede hiç görünmez.
   phone String @default("+90 342 325 55 55")
+  /// Formdan gelen talepler bu adreslere e-postayla gider (virgülle birden fazla). Siteye açılmaz.
+  notifyEmail String @default("latif@gunesbilgisayar.com.tr")
 
   updatedAt DateTime @updatedAt
 }

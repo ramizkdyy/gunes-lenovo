@@ -4,7 +4,7 @@ import { AdminService } from './admin.service';
 import { INPUT_CLASS, errorMessage } from './shared';
 import { telHref } from '../api/models';
 
-/** Sitenin genel ayarları. Şimdilik yalnızca iletişim numarası. */
+/** Sitenin genel ayarları: iletişim numarası ve form bildirim adresi. */
 @Component({
   selector: 'app-admin-settings',
   imports: [FormsModule],
@@ -22,7 +22,7 @@ import { telHref } from '../api/models';
           <div>
             <label for="settings-phone" class="block text-[14px] font-medium">Telefon numarası</label>
             <p class="mt-1 text-[13px] text-[var(--fg-soft)]">
-              Üst menüde, sayfa altında ve teklif sayfasında görünür.
+              Üst menüde, sayfa altında ve teklif sayfasında görünür. Boş bırakırsanız sitede gösterilmez.
             </p>
             <input
               id="settings-phone"
@@ -36,6 +36,23 @@ import { telHref } from '../api/models';
             @if (phone.trim()) {
               <p class="mt-2 text-[12.5px] text-[var(--fg-soft)]">Tıklanınca aranacak: {{ preview() }}</p>
             }
+          </div>
+
+          <div>
+            <label for="settings-notify" class="block text-[14px] font-medium">Teklif formu e-postası</label>
+            <p class="mt-1 text-[13px] text-[var(--fg-soft)]">
+              Formdan gelen her talep bu adrese e-postayla gider. Birden fazla adres için virgülle ayırın.
+            </p>
+            <input
+              id="settings-notify"
+              name="notifyEmail"
+              type="text"
+              inputmode="email"
+              autocomplete="off"
+              [(ngModel)]="notifyEmail"
+              [class]="inputClass + ' mt-2 max-w-[480px]'"
+              placeholder="latif@gunesbilgisayar.com.tr"
+            />
           </div>
 
           @if (error()) {
@@ -70,6 +87,7 @@ export class AdminSettings {
   protected readonly saved = signal(false);
   protected readonly error = signal('');
   protected phone = '';
+  protected notifyEmail = '';
 
   constructor() {
     void this.load();
@@ -78,7 +96,9 @@ export class AdminSettings {
   private async load(): Promise<void> {
     this.loading.set(true);
     try {
-      this.phone = (await this.admin.settings()).phone;
+      const settings = await this.admin.settings();
+      this.phone = settings.phone;
+      this.notifyEmail = settings.notifyEmail;
     } catch (err) {
       this.error.set(errorMessage(err));
     } finally {
@@ -95,7 +115,9 @@ export class AdminSettings {
     this.saved.set(false);
     this.busy.set(true);
     try {
-      this.phone = (await this.admin.updateSettings({ phone: this.phone })).phone;
+      const settings = await this.admin.updateSettings({ phone: this.phone, notifyEmail: this.notifyEmail });
+      this.phone = settings.phone;
+      this.notifyEmail = settings.notifyEmail;
       this.saved.set(true);
     } catch (err) {
       this.error.set(errorMessage(err));

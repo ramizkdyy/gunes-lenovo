@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { splitEmails } from '../settings/settings.service';
 import type { CreateMessageDto, MessageTopicDto } from './dto';
 
 /** Aynı IP'den arka arkaya gelen gönderimler için basit bir set. */
@@ -10,7 +12,10 @@ const RATE_LIMIT = 5;
 export class MessagesService {
   private readonly recent = new Map<string, number[]>();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService
+  ) {}
 
   // ─── Konular ────────────────────────────────────────────────────
 
@@ -74,7 +79,7 @@ export class MessagesService {
       ? await this.prisma.product.findUnique({ where: { id: dto.productId } })
       : null;
 
-    await this.prisma.message.create({
+    const message = await this.prisma.message.create({
       data: {
         name: dto.name.trim(),
         company: dto.company?.trim() ?? '',
@@ -89,8 +94,77 @@ export class MessagesService {
       },
     });
 
+    // E-posta beklenmez: gönderim yavaşlasa ya da hata verse de ziyaretçi
+    // "gönderildi" görür, mesaj panelde zaten kayıtlı.
+    void this.notify(message);
+
     // Ziyaretçiye kayıt ayrıntısı dönmüyoruz; yalnızca alındı bilgisi.
     return { ok: true };
+  }
+
+  /** Yeni talebi panelde ayarlı adreslere e-postayla iletir. */
+  private async notify(message: {
+    id: number;
+    name: string;
+    company: string;
+    phone: string;
+    email: string;
+    body: string;
+    topicLabel: string;
+    productLabel: string;
+    sourcePath: string;
+  }): Promise<void> {
+    const settings = await this.prisma.siteSettings.findUnique({ where: { id: 1 } });
+    const to = splitEmails(settings?.notifyEmail ?? 'latif@gunesbilgisayar.com.tr');
+    if (!to.length) return;
+
+    const rows: [string, string][] = [
+      ['Ad soyad', message.name],
+      ['Firma', message.company],
+      ['Telefon', message.phone],
+      ['E-posta', message.email],
+      ['Konu', message.topicLabel],
+      ['Ürün', message.productLabel],
+      ['Sayfa', message.sourcePath],
+    ];
+    const filled = rows.filter(([, value]) => value);
+
+    const subject = ['Yeni teklif talebi', message.company || message.name, message.productLabel]
+      .filter(Boolean)
+      .join(' · ');
+
+    const text = [
+      ...filled.map(([label, value]) => `${label}: ${value}`),
+      '',
+      message.body,
+      '',
+      `Panelde: Mesajlar #${message.id}`,
+    ].join('\n');
+
+    const html = `
+      <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#111;line-height:1.5">
+        <h2 style="font-size:17px;margin:0 0 16px">Yeni teklif talebi</h2>
+        <table cellpadding="6" cellspacing="0" style="border-collapse:collapse">
+          ${filled
+            .map(
+              ([label, value]) =>
+                `<tr><td style="color:#666;padding-right:16px;vertical-align:top">${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`
+            )
+            .join('')}
+        </table>
+        <p style="margin:20px 0 6px;color:#666">Mesaj</p>
+        <p style="margin:0;white-space:pre-wrap">${escapeHtml(message.body)}</p>
+        <p style="margin:24px 0 0;color:#999;font-size:12px">Panelde: Mesajlar #${message.id}</p>
+      </div>`;
+
+    await this.mail.send({
+      to,
+      subject,
+      text,
+      html,
+      // "Yanıtla" doğrudan talebi gönderene gitsin.
+      replyTo: message.email || undefined,
+    });
   }
 
   list(status?: 'NEW' | 'READ' | 'ARCHIVED') {
@@ -158,4 +232,12 @@ export class MessagesService {
       }
     }
   }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
